@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <RuntimeIdentifiers>win10-x64;win10-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
 
     <Authors>Suess Labs</Authors>
@@ -48,12 +48,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.13" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.13" />
+    <PackageReference Include="Avalonia" Version="0.10.21" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.21" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.21" />
     <PackageReference Include="AvaloniaEdit.TextMate" Version="0.10.12.2" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="0.10.12.2" />
-    <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="0.10.10" />
+    <PackageReference Include="Avalonia.Controls.TreeDataGrid" Version="0.10.18.1" />
+    <PackageReference Include="Prism.Avalonia" Version="8.1.97.1021" />
+    <PackageReference Include="Prism.DryIoc.Avalonia" Version="8.1.97.1021" />
 
     <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.2.1" />
     <PackageReference Include="MessageBox.Avalonia" Version="2.0.0" />
@@ -70,6 +72,11 @@
     <None Update="Images\litedb-icon.icns">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Converters\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

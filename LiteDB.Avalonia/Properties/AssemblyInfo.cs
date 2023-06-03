@@ -2,11 +2,11 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("LiteDB.Studio")]
+[assembly: AssemblyTitle("LiteDB.Avalonia")]
 [assembly: AssemblyDescription("A GUI tool for LiteDB v5")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("LiteDB")]
-[assembly: AssemblyProduct("LiteDB.Studio")]
+[assembly: AssemblyProduct("LiteDB.Avalonia")]
 [assembly: AssemblyCopyright("MIT")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

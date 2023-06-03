@@ -1,4 +1,5 @@
-﻿// This code was based on the CSharp Editor Example with Code Completion created by Daniel Grunwald
+﻿#if TEMP_DISABLED
+// This code was based on the CSharp Editor Example with Code Completion created by Daniel Grunwald
 using System;
 using System.IO;
 using System.Text;
@@ -12,7 +13,7 @@ using System.Linq;
 using System.Diagnostics;
 using ICSharpCode.TextEditor.Document;
 
-namespace LiteDB.Studio
+namespace LiteDB.Avalonia
 {
     public class SqlCodeCompletion : ICompletionDataProvider
     {
@@ -133,7 +134,7 @@ namespace LiteDB.Studio
             // get all keywords
             var words = new List<string>();
 
-            using (var stream = typeof(SqlCodeCompletion).Assembly.GetManifestResourceStream("LiteDB.Studio.ICSharpCode.TextEditor.Resources.SQL-Mode.xshd"))
+            using (var stream = typeof(SqlCodeCompletion).Assembly.GetManifestResourceStream("LiteDB.Avalonia.ICSharpCode.TextEditor.Resources.SQL-Mode.xshd"))
             {
                 using (var reader = new StreamReader(stream))
                 {
@@ -156,7 +157,7 @@ namespace LiteDB.Studio
 
             _codeCompletionData.AddRange(cols.Select(x => new DefaultCompletionData(x["name"].AsString, 
                 (x["type"] == "user" ? "User collection:\n-   " : "System collection:\n-   ") +
-                x["name"].AsString, 
+                x["name"].AsString,
                 x["type"] == "user" ? 1 :
                 x["type"] == "system" ? 5 : 4)));
 
@@ -186,3 +187,4 @@ namespace LiteDB.Studio
         }
     }
 }
+#endif

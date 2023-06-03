@@ -10,11 +10,11 @@ Ported to Avalonia and supercharged with Prism.Avalonia!
 
 This repo is provided as a sample for
 
-* Spreading some _cross-platform_ love for [LiteDB.Studio](https://github.com/mbdavid/LiteDB.Studio)
+* Spreading some _cross-platform_ love for [LiteDB.Avalonia](https://github.com/mbdavid/LiteDB.Avalonia)
 * An example for how to implement the Prism.Avalonia library
 
 ## How to Build
 
 1. `git submodule update --init`
 
-Special thanks to [OmidID](https://github.com/OmidID/LiteDB.Studio)'s initial fork!
+Special thanks to [OmidID](https://github.com/OmidID/LiteDB.Avalonia)'s initial fork!

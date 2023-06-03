@@ -1,218 +1,247 @@
-﻿using ICSharpCode.TextEditor.Gui.CompletionWindow;
-using LiteDB.Engine;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using Avalonia.Controls;
+using Avalonia.Data;
+using AvaloniaEdit.TextMate;
+using AvaloniaEdit;
+using TextMateSharp.Grammars;
 
-namespace LiteDB.Studio
+#if TREE_DATA_GRID
+using Avalonia.Controls.Models.TreeDataGrid;
+using AppDataGrid = Avalonia.Controls.TreeDataGrid;
+#else
+
+using AppDataGrid = Avalonia.Controls.DataGrid;
+
+#endif
+
+namespace LiteDB.Avalonia;
+
+public static class UIExtensions
 {
-    static class UIExtensions
+    public static void BindBsonData(this AppDataGrid grd, TaskData data)
     {
-        public static void BindBsonData(this DataGridView grd, TaskData data)
+        // hide grid if has more than 100 rows
+        grd.IsVisible = data.Result.Count < 100;
+        grd.Clear();
+
+#if TREE_DATA_GRID
+			var source = new FlatTreeDataGridSource<BsonValue>(data.Result);
+			var checkList = new Dictionary<string, IColumn<BsonValue>>();
+
+			foreach (var value in data.Result)
+			{
+				//var row = new DataGridRow();
+
+				var doc = value.IsDocument ? value.AsDocument : new BsonDocument { ["[value]"] = value };
+
+				if (doc.Keys.Count == 0) doc["[root]"] = "{}";
+
+				foreach (var key in doc.Keys)
+				{
+					if (checkList.ContainsKey(key)) continue;
+
+					IColumn<BsonValue> col = doc[key].Type switch
+					{
+						BsonType.Boolean => new TextColumn<BsonValue, bool>(
+							key,
+							v => v[key].AsBoolean,
+							(b, v) => b[key] = v),
+						_ => new TextColumn<BsonValue, string>(
+							key,
+							v => v[key].ToString(),
+							(b, v) => b[key] = v),
+					};
+
+					checkList.Add(key, col);
+					source.Columns.Add(col);
+				}
+			}
+			grd.Source = source;
+#else
+        foreach (var value in data.Result)
         {
-            // hide grid if has more than 100 rows
-            grd.Visible = data.Result.Count < 100;
-            grd.Clear();
+            var doc = value.IsDocument ? value.AsDocument : new BsonDocument { ["value"] = value };
 
-            foreach (var value in data.Result)
+            if (doc.Keys.Count == 0) doc["[root]"] = "{}";
+
+            foreach (var key in doc.Keys)
             {
-                var row = new DataGridViewRow();
+                if (grd.Columns.Any(f => f.Header?.ToString() == key)) continue;
 
-                var doc = value.IsDocument ?
-                    value.AsDocument :
-                    new BsonDocument { ["[value]"] = value };
-
-                if (doc.Keys.Count == 0) doc["[root]"] = "{}";
-
-                foreach (var key in doc.Keys)
+                DataGridBoundColumn col = doc[key].Type switch
                 {
-                    var col = grd.Columns[key];
-
-                    if (col == null)
-                    {
-                        grd.Columns.Add(key, key);
-
-                        col = grd.Columns[key];
-                        col.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-
-                        col.ReadOnly = key == "_id";
-                    }
-                }
-
-                row.DefaultCellStyle.BackColor = Color.Silver;
-                row.CreateCells(grd);
-
-                foreach (var key in doc.Keys)
-                {
-                    var col = grd.Columns[key];
-                    var cell = row.Cells[col.Index];
-
-                    cell.Style.BackColor = Color.White;
-                    cell.Value = value.IsDocument ? value[key] : value;
-
-                    row.ReadOnly = key == "_id";
-                }
-
-                grd.Rows.Add(row);
-            }
-
-            if (data.LimitExceeded)
-            {
-                var limitRow = new DataGridViewRow();
-                limitRow.CreateCells(grd);
-                limitRow.DefaultCellStyle.ForeColor = Color.OrangeRed;
-                var cell = limitRow.Cells[0];
-                cell.Value = "Limit exceeded";
-                cell.ReadOnly = true;
-                grd.Rows.Add(limitRow);
-            }
-
-            for (int i = 0; i <= grd.Columns.Count - 1; i++)
-            {
-                var colw = grd.Columns[i].Width;
-                grd.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                grd.Columns[i].Width = Math.Min(colw, 400);
-            }
-
-            if (grd.Rows.Count == 0)
-            {
-                grd.Columns.Add("no-data", "[no result]");
-            }
-
-            grd.ReadOnly = grd.Columns["_id"] == null;
-            grd.Visible = true;
-        }
-
-        public static void DoubleBuffered(this DataGridView dgv, bool setting)
-        {
-            var dgvType = dgv.GetType();
-            var pi = dgvType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
-            pi.SetValue(dgv, setting, null);
-        }
-
-        public static void Clear(this DataGridView grd)
-        {
-            grd.Columns.Clear();
-            grd.DataSource = null;
-        }
-
-        public static void BindBsonData(this ICSharpCode.TextEditor.TextEditorControl txt, TaskData data)
-        {
-            var index = 0;
-            var sb = new StringBuilder();
-
-            using (var writer = new StringWriter(sb))
-            {
-                var json = new JsonWriter(writer)
-                {
-                    Pretty = true,
-                    Indent = 2
+                    BsonType.Boolean => new DataGridCheckBoxColumn() { Header = key },
+                    _ => new DataGridTextColumn() { Header = key }
                 };
 
-                if (data.Result.Count > 0)
-                {
-                    foreach (var value in data.Result)
-                    {
-                        if (data.Result?.Count > 1)
-                        {
-                            sb.AppendLine($"/* {index++ + 1} */");
-                        }
+                grd.Columns.Add(col);
 
-                        json.Serialize(value);
-                        sb.AppendLine();
-                    }
+                col.Width = DataGridLength.Auto;
+                col.IsReadOnly = key == "_id" ||
+                                 doc[key].Type is BsonType.Document
+                                     or BsonType.Array
+                                     or BsonType.ObjectId
+                                     or BsonType.Binary;
 
-                    if (data.LimitExceeded)
-                    {
-                        sb.AppendLine();
-                        sb.AppendLine("/* Limit exceeded */");
-                    }
-                }
-                else
+                col.Binding = new Binding
                 {
-                    sb.AppendLine("no result");
-                }
+                    Mode = BindingMode.TwoWay,
+                    Path = key
+                };
             }
-
-            txt.SetHighlighting("JSON");
-            txt.Text = sb.ToString();
         }
 
-        public static void BindErrorMessage(this DataGridView grid, string sql, Exception ex)
+        grd.IsReadOnly = grd.Columns.All(f => f.Header?.ToString() != "_id");
+        grd.Items = data.Result;
+#endif
+
+        grd.IsVisible = true;
+    }
+
+    public static void Clear(this AppDataGrid grd)
+    {
+#if TREE_DATA_GRID
+			var pass = grd.Source;
+			grd.Source = null;
+			(pass as IDisposable)?.Dispose();
+#else
+        grd.Columns.Clear();
+        grd.Items = null;
+#endif
+    }
+
+    public static void BindBsonData(
+        this TextEditor txt,
+        TextMate.Installation textMate,
+        RegistryOptions registryOptions,
+        TaskData data)
+    {
+        var index = 0;
+        var sb = new StringBuilder();
+
+        using (var writer = new StringWriter(sb))
         {
-            grid.Clear();
-            grid.Columns.Add("err", "Error");
-            grid.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            grid.Rows.Add(ex.Message);
-        }
-
-        public static void BindErrorMessage(this ICSharpCode.TextEditor.TextEditorControl txt, string sql, Exception ex)
-        {
-            var sb = new StringBuilder();
-
-            if (!(ex is LiteException))
+            var json = new JsonWriter(writer)
             {
-                sb.AppendLine(ex.Message);
-                sb.AppendLine();
-                sb.AppendLine("===================================================");
-                sb.AppendLine(ex.StackTrace);
-            }
-            else if (ex is LiteException lex)
-            {
-                sb.AppendLine(ex.Message);
+                Pretty = true,
+                Indent = 2
+            };
 
-                if (lex.ErrorCode == LiteException.UNEXPECTED_TOKEN && sql != null)
+            if (data.Result.Count > 0)
+            {
+                foreach (var value in data.Result)
                 {
-                    var p = (int)lex.Position;
-                    var start = (int)Math.Max(p - 30, 1) - 1;
-                    var end = Math.Min(p + 15, sql.Length);
-                    var length = end - start;
+                    if (data.Result?.Count > 1)
+                    {
+                        sb.AppendLine($"/* {index++ + 1} */");
+                    }
 
-                    var str = sql.Substring(start, length).Replace('\n', ' ').Replace('\r', ' ');
-                    var t = length - (end - p);
-
+                    json.Serialize(value);
                     sb.AppendLine();
-                    sb.AppendLine(str);
-                    sb.AppendLine("".PadLeft(t, '-') + "^");
+                }
+
+                if (data.LimitExceeded)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("/* Limit exceeded */");
                 }
             }
-
-            txt.Highlighting = null;
-            txt.Clear();
-            txt.Text = sb.ToString();
-        }
-
-        public static void BindParameter(this ICSharpCode.TextEditor.TextEditorControl txt, TaskData data)
-        {
-            txt.SuspendLayout();
-            txt.Clear();
-            txt.SetHighlighting("JSON");
-
-            var sb = new StringBuilder();
-
-            using (var writer = new StringWriter(sb))
+            else
             {
-                var w = new JsonWriter(writer)
-                {
-                    Pretty = true,
-                    Indent = 2
-                };
-
-                w.Serialize(data.Parameters ?? BsonValue.Null);
+                sb.AppendLine("no result");
             }
-
-            txt.Text = sb.ToString();
-            txt.ResumeLayout();
         }
+
+        textMate.SetGrammar(
+            registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".json").Id));
+        txt.Text = sb.ToString();
+    }
+
+    public static void BindErrorMessage(this AppDataGrid grid, string sql, Exception ex)
+    {
+        grid.Clear();
+#if TREE_DATA_GRID
+#else
+        var col = new DataGridTextColumn() { Header = "Error" };
+        grid.Columns.Add(col);
+
+        col.Width = DataGridLength.Auto;
+
+        col.IsReadOnly = true;
+        col.Binding = new Binding();
+
+        grid.Items = new List<string>() { ex.Message };
+#endif
+    }
+
+    public static void BindErrorMessage(
+        this TextEditor txt,
+        TextMate.Installation textMate,
+        RegistryOptions registryOptions,
+        string sql,
+        Exception ex)
+    {
+        var sb = new StringBuilder();
+
+        if (!(ex is LiteException))
+        {
+            sb.AppendLine(ex.Message);
+            sb.AppendLine();
+            sb.AppendLine("===================================================");
+            sb.AppendLine(ex.StackTrace);
+        }
+        else if (ex is LiteException lex)
+        {
+            sb.AppendLine(ex.Message);
+
+            if (lex.ErrorCode == LiteException.UNEXPECTED_TOKEN && sql != null)
+            {
+                var p = (int)lex.Position;
+                var start = (int)Math.Max(p - 30, 1) - 1;
+                var end = Math.Min(p + 15, sql.Length);
+                var length = end - start;
+
+                var str = sql.Substring(start, length).Replace('\n', ' ').Replace('\r', ' ');
+                var t = length - (end - p);
+
+                sb.AppendLine();
+                sb.AppendLine(str);
+                sb.AppendLine("".PadLeft(t, '-') + "^");
+            }
+        }
+
+        textMate.SetGrammar(null);
+        txt.Clear();
+        txt.Text = sb.ToString();
+    }
+
+    public static void BindParameter(
+        this TextEditor txt,
+        TextMate.Installation textMate,
+        RegistryOptions registryOptions,
+        TaskData data)
+    {
+        txt.Clear();
+        textMate.SetGrammar(
+            registryOptions.GetScopeByLanguageId(registryOptions.GetLanguageByExtension(".json").Id));
+
+        var sb = new StringBuilder();
+
+        using (var writer = new StringWriter(sb))
+        {
+            var w = new JsonWriter(writer)
+            {
+                Pretty = true,
+                Indent = 2
+            };
+
+            w.Serialize(data.Parameters ?? BsonValue.Null);
+        }
+
+        txt.Text = sb.ToString();
     }
 }

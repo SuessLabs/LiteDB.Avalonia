@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
-namespace LiteDB.Studio
+namespace LiteDB.Avalonia
 {
-    class TaskData
+    public class TaskData
     {
         public const int RESULT_LIMIT = 1000;
 
