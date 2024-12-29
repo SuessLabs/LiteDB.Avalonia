@@ -1,20 +1,28 @@
-# LitedB Prism Studio
+# LitedB Prism.Avalonia Studio
 
 A GUI tool for viewing and editing documents for LiteDB v5
 
-Ported to Avalonia and supercharged with Prism.Avalonia!
+NOTICE:
+> This is a work-in-progress
+> Porting to Prism.Avalonia is underway!
 
 ![LiteDB Studio](https://pbs.twimg.com/media/D_142rzWwAECJDd?format=jpg&name=900x900)
 
-## Why Build This
+## TO DO
 
-This repo is provided as a sample for
-
-* Spreading some _cross-platform_ love for [LiteDB.Studio](https://github.com/mbdavid/LiteDB.Studio)
-* An example for how to implement the Prism.Avalonia library
+* Upgrade Prism.Avalonia and Avalonia to the latest
+* Add AvaloniaEdit
+* Remove MessageBox NuGet and use Prism.Dialogs
+* Code cleanup
+* Finish import migration
 
 ## How to Build
 
 1. `git submodule update --init`
 
-Special thanks to [OmidID](https://github.com/OmidID/LiteDB.Studio)'s initial fork!
+## References
+
+This repo is provided as an example for how to implement the Prism.Avalonia library
+
+* Special thanks to [OmidID](https://github.com/OmidID/LiteDB.Studio)'s initial fork!
+* Spreading some _cross-platform_ love for [LiteDB.Avalonia](https://github.com/mbdavid/LiteDB.Avalonia)
