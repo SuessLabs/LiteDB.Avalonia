@@ -2,7 +2,9 @@
 
 A GUI tool for viewing and editing documents for LiteDB v5
 
-Ported to Avalonia and supercharged with Prism.Avalonia!
+NOTICE:
+> This is a work-in-progress
+> Porting to Prism.Avalonia is underway!
 
 ![LiteDB Studio](https://pbs.twimg.com/media/D_142rzWwAECJDd?format=jpg&name=900x900)
 
@@ -14,5 +16,5 @@ Ported to Avalonia and supercharged with Prism.Avalonia!
 
 This repo is provided as an example for how to implement the Prism.Avalonia library
 
-* Special thanks to [OmidID](https://github.com/OmidID/LiteDB.Avalonia)'s initial fork!
+* Special thanks to [OmidID](https://github.com/OmidID/LiteDB.Studio)'s initial fork!
 * Spreading some _cross-platform_ love for [LiteDB.Avalonia](https://github.com/mbdavid/LiteDB.Avalonia)

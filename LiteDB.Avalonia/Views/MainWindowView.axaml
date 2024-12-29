@@ -1,9 +1,162 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avaloniaEdit="https://github.com/avaloniaui/avaloniaedit"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LiteDB.Avalonia.Views.MainWindowView"
-        Title="MainWindowView">
-  Welcome to Avalonia!
+        d:DesignHeight="450"
+        d:DesignWidth="800"
+        Title="LiteDB - Powered By Prism.Avalonia"
+        mc:Ignorable="d">
+  <Window.Resources>
+    <ResourceDictionary />
+  </Window.Resources>
+  <DockPanel>
+    <StackPanel Classes="Toolbar"
+                DockPanel.Dock="Top"
+                Orientation="Horizontal">
+      <Button Command="{Binding OpenCommand}"
+              Content="Open"
+              IsVisible="{Binding !Connected}"
+              Tag="fas fa-plug" />
+      <Button Command="{Binding DisconnectCommand}"
+              Content="Disconnect"
+              IsVisible="{Binding Connected}"
+              Tag="fas fa-plug" />
+      <Button Command="{Binding RefreshCommand}"
+              Content="Refresh"
+              IsEnabled="{Binding Connected}"
+              Tag="fas fa-sync" />
+      <Button Command="{Binding RunCommand}"
+              Content="Run"
+              Foreground="Green"
+              IsEnabled="{Binding Connected}"
+              Tag="fas fa-play" />
+      <Rectangle Classes="Sep" />
+      <Button Command="{Binding BeginCommand}"
+              Content="Begin"
+              IsEnabled="{Binding Connected}"
+              Tag="fas fa-play-circle" />
+      <Button Command="{Binding CommitCommand}"
+              Content="Commit"
+              IsEnabled="{Binding Connected}"
+              Tag="fad fa-database" />
+      <Button Command="{Binding RollbackCommand}"
+              Content="Rollback"
+              IsEnabled="{Binding Connected}"
+              Tag="fas fa-trash-restore" />
+      <Rectangle Classes="Sep" />
+      <Button Command="{Binding CheckpointCommand}"
+              Content="Checkpoint"
+              IsEnabled="{Binding Connected}"
+              Tag="fas fa-caret-square-down" />
+    </StackPanel>
+
+    <Grid Height="28"
+          Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}"
+          Classes="StatusBar"
+          ColumnDefinitions="*,Auto,Auto,Auto"
+          DockPanel.Dock="Bottom">
+      <TextBlock Text="{Binding TextPosition}"
+                 Grid.Column="0"
+                 VerticalAlignment="Center" />
+      <ProgressBar Grid.Column="1"
+                   VerticalAlignment="Center"
+                   IsIndeterminate="{Binding Loading}"
+                   IsVisible="{Binding Loading}" />
+      <TextBlock Text="{Binding DocumentsStatus}"
+                 Grid.Column="2"
+                 VerticalAlignment="Center" />
+      <TextBlock Text="{Binding ElapsedStatus}"
+                 Grid.Column="3"
+                 VerticalAlignment="Center" />
+    </Grid>
+
+    <SplitView DisplayMode="CompactInline"
+               IsPaneOpen="True"
+               OpenPaneLength="296">
+      <SplitView.Pane>
+        <TreeView IsEnabled="{Binding Connected}" Items="{Binding TreeViewNodes}">
+          <TreeView.ItemTemplate>
+            <TreeDataTemplate ItemsSource="{Binding Nodes}">
+              <Grid ColumnDefinitions="Auto, *" DoubleTapped="TreeViewItem_OnDoubleTapped">
+                <i:Icon Margin="4"
+                        VerticalAlignment="Center"
+                        Value="{Binding Icon}" />
+                <TextBlock Text="{Binding Name}"
+                           Grid.Column="1"
+                           Margin="4"
+                           VerticalAlignment="Center" />
+              </Grid>
+            </TreeDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+      </SplitView.Pane>
+
+      <Grid RowDefinitions="30,*,2,*">
+        <TabStrip IsEnabled="{Binding Connected}"
+                  Items="{Binding Tasks}"
+                  SelectedItem="{Binding ActiveTask}">
+          <TabStrip.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding Title}"
+                         PointerReleased="TabItemOnPointerReleased"
+                         Tag="{Binding .}">
+                <TextBlock.ContextMenu>
+                  <ContextMenu IsVisible="{Binding !!Id}">
+                    <MenuItem Command="{Binding DataContext.TabCloseCommand, ElementName=MainPage}"
+                              CommandParameter="{Binding .}"
+                              Header="Close" />
+                    <MenuItem Command="{Binding DataContext.TabCloseAllCommand, ElementName=MainPage}"
+                              CommandParameter="{Binding .}"
+                              Header="Close all tabs" />
+                    <MenuItem Command="{Binding DataContext.TabCloseOthersCommand, ElementName=MainPage}"
+                              CommandParameter="{Binding .}"
+                              Header="Close other tabs" />
+                    <MenuItem Command="{Binding DataContext.TabCloseToRightCommand, ElementName=MainPage}"
+                              CommandParameter="{Binding .}"
+                              Header="Close tabs to right" />
+                    <MenuItem Command="{Binding DataContext.TabCloseToLeftCommand, ElementName=MainPage}"
+                              CommandParameter="{Binding .}"
+                              Header="Close tabs to left" />
+                  </ContextMenu>
+                </TextBlock.ContextMenu>
+              </TextBlock>
+            </DataTemplate>
+          </TabStrip.ItemTemplate>
+        </TabStrip>
+        <avaloniaEdit:TextEditor Name="Editor"
+                                 Grid.Row="1"
+                                 BorderBrush="{DynamicResource SystemControlPageBackgroundChromeLowBrush}"
+                                 BorderThickness="1"
+                                 IsEnabled="{Binding Connected}"
+                                 ShowLineNumbers="True"
+                                 TextChanged="Editor_OnTextChanged" />
+        <GridSplitter Grid.Row="2"
+                      Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}"
+                      ResizeDirection="Rows" />
+        <TabControl Grid.Row="3">
+          <TabItem Header="Grid">
+            <DataGrid Name="DataGrid"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      AutoGenerateColumns="False"
+                      CellEditEnded="OnCellEditEnded"
+                      IsEnabled="{Binding Connected}" />
+          </TabItem>
+          <TabItem Header="Text">
+            <avaloniaEdit:TextEditor Name="ResultEditor"
+                                     IsEnabled="{Binding Connected}"
+                                     IsReadOnly="True" />
+          </TabItem>
+          <TabItem Header="Parameters">
+            <avaloniaEdit:TextEditor Name="ParameterEditor"
+                                     IsEnabled="{Binding Connected}"
+                                     IsReadOnly="True" />
+          </TabItem>
+        </TabControl>
+      </Grid>
+    </SplitView>
+  </DockPanel>
 </Window>
