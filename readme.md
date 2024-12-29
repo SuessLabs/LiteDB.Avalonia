@@ -8,6 +8,14 @@ NOTICE:
 
 ![LiteDB Studio](https://pbs.twimg.com/media/D_142rzWwAECJDd?format=jpg&name=900x900)
 
+## TO DO
+
+* Upgrade Prism.Avalonia and Avalonia to the latest
+* Add AvaloniaEdit
+* Remove MessageBox NuGet and use Prism.Dialogs
+* Code cleanup
+* Finish import migration
+
 ## How to Build
 
 1. `git submodule update --init`
