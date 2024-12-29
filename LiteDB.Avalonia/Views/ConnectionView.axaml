@@ -13,6 +13,7 @@
       <converters:FileNameConverter x:Key="FileNameConverter" />
     </ResourceDictionary>
   </Window.Resources>
+
   <Window.Styles>
     <Style Selector="TextBlock">
       <Setter Property="VerticalAlignment" Value="Center" />
@@ -21,7 +22,7 @@
       <Setter Property="Padding" Value="40 12" />
     </Style>
   </Window.Styles>
-  
+
   <Grid ColumnDefinitions="3*,1*,3*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" Margin="20">
     <TextBlock Grid.Row="0" Grid.Column="1" Text="File" HorizontalAlignment="Right" />
 
@@ -30,8 +31,8 @@
 		         Margin="2, 2, 30, 2"
 		         Name="FileTextBox"
 		         Text="{Binding FilePath}" />
-    
-    <Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" Content="..." Click="Button_OnClick" />
+
+    <Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" Content="..." />
 
     <StackPanel Grid.ColumnSpan="2"
 		            Grid.Column="1"
@@ -43,12 +44,12 @@
       <Button Content="Open" Foreground="Green" Command="{Binding OpenCommand}" />
       <Button Content="Cancel" Command="{Binding CloseCommand}" />
     </StackPanel>
-    
+
     <ScrollViewer Grid.Column="0" Grid.Row="0" Grid.RowSpan="6">
       <ItemsControl Items="{Binding ConnectionStrings}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            
+
             <Grid ColumnDefinitions="*,Auto">
               <Button Classes="Hyperlink"
 							        Content="{Binding Filename, Converter={StaticResource FileNameConverter}}"
@@ -56,13 +57,12 @@
 							        Command="{Binding DataContext.RecentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
 							        HorizontalAlignment="Stretch"
 							        ToolTip.Tip="{Binding Filename}" />
-              
+
               <Button Grid.Column="1"
 							        CommandParameter="{Binding .}"
 							        Command="{Binding DataContext.RecentCommand, RelativeSource={RelativeSource AncestorType=Window}}"
 							        i:Attached.Icon="fas fa-info-circle" />
             </Grid>
-            
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
